@@ -27,6 +27,7 @@ func Ivanov(fromWarehouse *chan item) {
 		log.Println("Stolen ", treasure)
 		*fromWarehouse <- treasure
 	}
+	//close(*fromWarehouse)
 }
 
 func Petrov(fromWarehouse *chan item, inTrunk *chan item) {
@@ -36,6 +37,7 @@ func Petrov(fromWarehouse *chan item, inTrunk *chan item) {
 		log.Println("Put ", newItem, " in trunk.")
 		*inTrunk <- newItem
 	}
+	//close(*inTrunk)
 }
 
 func Nechiporchuk(inTrunk *chan item) {
