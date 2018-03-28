@@ -6,6 +6,7 @@ import java.util.concurrent.ForkJoinPool;
 public class Main {
     public static void main(String[] args) {
         ArrayList<Monk> monks = new ArrayList<Monk>();
+
         int n = 10;
         boolean yan = true;
         for (int i = 0; i < n; i++) {

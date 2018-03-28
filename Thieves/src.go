@@ -2,8 +2,7 @@ package main
 
 import (
 	"log"
-	"time"
-	"fmt"
+	"sync"
 )
 
 type item struct {
@@ -11,40 +10,68 @@ type item struct {
 	price int
 }
 
+var wg sync.WaitGroup
+
 func main() {
 	var fromWarehouse = make(chan item)
 	var inTrunk = make(chan item)
 
+	wg.Add(3)
 	go Ivanov(&fromWarehouse)
 	go Petrov(&fromWarehouse, &inTrunk)
 	go Nechiporchuk(&inTrunk)
-	fmt.Scanln()
+	wg.Wait()
+
+	log.Println("Done")
 }
 
 func Ivanov(fromWarehouse *chan item) {
-	for i := 0; i < 3; i++ {
+	defer wg.Done()
+
+	for i := 0; i < 5; i++ {
 		var treasure = item{"Item", i}
 		log.Println("Stolen ", treasure)
 		*fromWarehouse <- treasure
 	}
-	//close(*fromWarehouse)
+	*fromWarehouse <- item{"Item", -1}
+	log.Println("1 done")
 }
 
 func Petrov(fromWarehouse *chan item, inTrunk *chan item) {
-	time.Sleep(1000)
+	defer wg.Done()
+
 	for {
-		newItem := <- *fromWarehouse
-		log.Println("Put ", newItem, " in trunk.")
-		*inTrunk <- newItem
+		select {
+		case newItem := <-*fromWarehouse:
+			if newItem.price == -1 {
+				log.Println("2 done")
+				*inTrunk <- item{"Item", -1}
+				return
+			}
+			log.Println("Put ", newItem, " in trunk.")
+			*inTrunk <- newItem
+		default:
+			continue
+		}
 	}
-	//close(*inTrunk)
+	*inTrunk <- item{"Item", -1}
 }
 
 func Nechiporchuk(inTrunk *chan item) {
+	defer wg.Done()
+
 	sum := 0
 	for {
-		newItem := <- *inTrunk
-		sum = sum + newItem.price
-		log.Println("Counted ", newItem, " total: ", sum)
+		select {
+		case newItem := <-*inTrunk:
+			if newItem.price == -1 {
+				log.Println("3 done")
+				return
+			}
+			sum = sum + newItem.price
+			log.Println("Counted ", newItem, " total: ", sum)
+		default:
+			continue
+		}
 	}
 }

@@ -4,6 +4,8 @@ import java.util.Scanner;
 
 public class Main {
     volatile static boolean foundBear = false;
+    volatile static ArrayList<Boolean> searchedSectors = new ArrayList<>();
+    static ArrayList<ArrayList<Boolean>> forest = new ArrayList<>();
 
     public static void main(String[] args) {
         Scanner reader = new Scanner(System.in);
@@ -15,13 +17,13 @@ public class Main {
 
         reader.close();
 
-        ArrayList<ArrayList<Boolean>> forest = new ArrayList<>();
         for (int i = 0; i < sectorsNumber; i++) {
             ArrayList<Boolean> newSector = new ArrayList<>();
             for (int j = 0; j < cellsInSector; j++) {
                 newSector.add(false);
             }
             forest.add(newSector);
+            searchedSectors.add(false);
         }
 
         Random rand = new Random();
@@ -33,35 +35,14 @@ public class Main {
 
         forest.get(sectorIndex).set(cellIndex, true);
 
-        ArrayList<Flock> flocks = new ArrayList<>();
-
-        for (int i = 0; i < sectorsNumber; i++) {
-            Flock newFlock = new Flock(i, forest.get(i));
-            flocks.add(newFlock);
-        }
-
-        int i = 0;
-        while (i < sectorsNumber / 2 + 1) {
-            flocks.get(i).start();
-            i++;
-        }
-
-        while (i >= 0) {
+        for (int i = 0; i < 3; i++) {
+            Flock newFlock = new Flock(i);
             try {
-                flocks.get(i).join();
+                Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            i--;
-        }
-
-        if (!foundBear) {
-            System.out.println("------------------------------------------------------------------------------------------");
-            i = sectorsNumber / 2 + 1;
-            while (i < sectorsNumber) {
-                flocks.get(i).start();
-                i++;
-            }
+            newFlock.start();
         }
 
     }
