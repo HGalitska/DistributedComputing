@@ -40,6 +40,7 @@ func enterBarbershop(clients []Client, clientsQueue chan *Client) {
 
 func main() {
 	fmt.Println("BarberShop")
+	n := 4
 
 	clientsQueue := make(chan *Client, n)
 	done := make(chan *Client, n)
