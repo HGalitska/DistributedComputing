@@ -19,7 +19,7 @@ public class Field {
         nextState = new Cell[width][height];
 
         for (int i = 0; i < width; i++)
-            for (int j = 0; j < width; j++) {
+            for (int j = 0; j < height; j++) {
                 currentState[i][j] = new Cell();
                 nextState[i][j] = new Cell();
             }
@@ -40,7 +40,7 @@ public class Field {
 
     void generate(int numberOfGangs) {
         Random rand = new Random();
-        int cellsPerGang = (int) (width * height * 0.3 / numberOfGangs);
+        int cellsPerGang = (int) (width * height * 0.5/ numberOfGangs) ;
         for (int i = 1; i <= numberOfGangs; i++) {
             for (int j = 0; j < cellsPerGang; j++) {
                 int x = rand.nextInt(width);

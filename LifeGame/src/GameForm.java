@@ -5,11 +5,9 @@ public class GameForm extends JFrame {
     private JPanel fieldGrid;
     private JButton startButton;
     private JButton stopButton;
-    private JComboBox<Integer> comboBox;
 
     GameForm(int fieldWidth, int fieldHeight, int cellSize) {
         super("Game Of Life");
-        //setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         //------------------------------------------------------------------FIELD GRID
@@ -25,21 +23,15 @@ public class GameForm extends JFrame {
         stopButton.setEnabled(false);
         tools.add(stopButton);
 
-        comboBox = new JComboBox<>(new Integer[]{1, 2, 3});
-        tools.add(comboBox);
-
         //------------------------------------------------------------------ACTION LISTENERS
         startButton.addActionListener(e -> {
-            if (comboBox.getSelectedIndex() != -1) {
-                int numberOfGangs = comboBox.getItemAt(comboBox.getSelectedIndex());
-                ((FieldGrid)fieldGrid).startLife(numberOfGangs);
-                startButton.setEnabled(false);
-                stopButton.setEnabled(true);
-            }
+            ((FieldGrid) fieldGrid).startLife(3);
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
         });
 
         stopButton.addActionListener(e -> {
-            ((FieldGrid)fieldGrid).stopLife();
+            ((FieldGrid) fieldGrid).stopLife();
             stopButton.setEnabled(false);
             startButton.setEnabled(true);
         });

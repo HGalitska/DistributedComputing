@@ -1,5 +1,5 @@
 class Main {
     public static void main(String[] args) {
-        GameForm game = new GameForm(50, 50, 10);
+        GameForm game = new GameForm(30, 30, 20);
     }
 }
