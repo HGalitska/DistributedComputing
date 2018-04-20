@@ -2,81 +2,39 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-public class Duck {
-    Position position;
-    Speed speed;
+import static java.lang.Math.abs;
+
+public class Duck extends GameObject implements Runnable{
     boolean direction;
-    Image aliveImage;
 
-    int w, h;
-
-    Duck() {
-        loadImages();
-    }
-    Duck(Position position, Speed speed, boolean direction) {
-        this.position = position;
-        this.speed = speed;
+    Duck(int x, int y, int dx, int dy, boolean direction) {
+        super(x, y, dx, dy);
         this.direction = direction;
 
-        loadImages();
+        loadImage("duck.gif");
+        width = 200;
+        height = 100;
     }
 
-    private void loadImages() {
-        ImageIcon ii1 = new ImageIcon("duck.gif");
-        aliveImage = ii1.getImage();
+    @Override
+    public void run() {
+        while(visible) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (direction) {
+                loadImage("duck.gif");
+                x += dx;
+            }
+            else
+            {
+                loadImage("duck_r.gif");
+                x -= dx;
+            }
 
-        w = aliveImage.getWidth(null);
-        h = aliveImage.getHeight(null);
-    }
-
-    public void move() {
-        position.x += speed.dx;
-        position.y += speed.dy;
-    }
-
-    public void keyPressed(KeyEvent e) {
-
-        int key = e.getKeyCode();
-
-        if (key == KeyEvent.VK_LEFT) {
-            speed.dx = -2;
+            if (x > GamePanel.GAME_WIDTH - 200 || x < 0) direction = !direction;
         }
-
-        if (key == KeyEvent.VK_RIGHT) {
-            speed.dx = 2;
-        }
-
-        if (key == KeyEvent.VK_UP) {
-            speed.dy = -2;
-        }
-
-        if (key == KeyEvent.VK_DOWN) {
-            speed.dy = 2;
-        }
-    }
-
-    public void keyReleased(KeyEvent e) {
-
-        int key = e.getKeyCode();
-
-        if (key == KeyEvent.VK_LEFT) {
-            speed.dx = 0;
-        }
-
-        if (key == KeyEvent.VK_RIGHT) {
-            speed.dx = 0;
-        }
-
-        if (key == KeyEvent.VK_UP) {
-            speed.dy = 0;
-        }
-
-        if (key == KeyEvent.VK_DOWN) {
-            speed.dy = 0;
-        }
-    }
-
-    public Rectangle getBounds() {
-        return new Rectangle(position.x, position.y, w, h);
     }
 }
