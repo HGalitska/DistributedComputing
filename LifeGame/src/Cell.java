@@ -1,7 +1,7 @@
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Cell {
-    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    //ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     int underGang;
 
     Cell(){

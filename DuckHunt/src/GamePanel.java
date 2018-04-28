@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
 
-    final static int NUMBER_OF_DUCKS = 10;
+    final static int NUMBER_OF_DUCKS = 100;
     private Timer timer;
     boolean inGame = false;
     Image backgroundImage;
@@ -50,7 +50,7 @@ public class GamePanel extends JPanel implements ActionListener {
             Random r = new Random();
             int x = r.nextInt(GAME_WIDTH - 300);
             int y = r.nextInt(GAME_HEIGHT - 600);
-            int dx = r.nextInt(2) + 1;
+            int dx = r.nextInt(9) + 1;
 
             Duck newDuck = new Duck(x, y, dx, 0, r.nextBoolean());
             new Thread(newDuck).start();
@@ -169,15 +169,18 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void checkCollisions() {
         for (Shot shot : hunter.shots) {
-            Rectangle r2 = shot.getBounds();
+            Rectangle r1 = shot.getBounds();
             for (Duck duck : ducks) {
 
-                Rectangle r1 = duck.getBounds();
+                Rectangle r2 = duck.getBounds();
 
                 if (r1.intersects(r2)) {
                     shot.setVisible(false);
                     duck.setVisible(false);
-                    if (ducks.size() == 0) inGame = false;
+                    if (ducks.size() == 0) {
+                        duck.image = new ImageIcon("dead_duck.png").getImage();
+                        inGame = false;
+                    }
                 }
             }
         }

@@ -1,6 +1,8 @@
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+
+// delete locks
 public class Field {
     private ReentrantReadWriteLock lock = null;
 
@@ -57,9 +59,9 @@ public class Field {
         for (int gang = 1; gang <= numberOfGangs; gang++) {
             for (int x = startAt; x < finishAt; x++) {
                 for (int y = 0; y < width; y++) {
-                    nextState[x][y].lock.writeLock().lock();
+                    //nextState[x][y].lock.writeLock().lock();
                     nextState[x][y].underGang = updateCell(currentState[x][y].underGang, nextState[x][y].underGang, livingNeighbours(x, y, gang), gang);
-                    nextState[x][y].lock.writeLock().unlock();
+                    //nextState[x][y].lock.writeLock().unlock();
                 }
             }
         }
