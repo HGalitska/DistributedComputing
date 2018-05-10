@@ -1,152 +1,274 @@
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.awt.event.ActionListener;
+import javax.swing.event.TableModelListener;
 
 public class MainForm extends JFrame {
 
-    StudiesDepartment department;
+    private StudiesDepartment department;
+    private JTable studentsTable;
+    private JTable groupsTable;
 
-    JTable dataTable;
-    JScrollPane sp;
-    JTabbedPane pane;
+    private JTextPane resultTextPane;
 
-    JButton saveToFileButton;
-    JButton addRowButton;
-    JButton deleteRowButton;
+    private JButton addStudentButton;
+    private JButton addGroupButton;
+    private JButton findStudentButton;
+    private JButton findGroupButton;
+    private JButton findStudentsInGroupButton;
+    private JButton deleteRowButton;
+    private JButton saveToFileButton;
 
-    MainForm() {
+    private JTextField studentCodeField1;
+    private JTextField studentNameField;
+    private JTextField isCapField;
+    private JTextField groupCodeField1;
+    private JTextField groupCodeField2;
+    private JTextField groupNameField;
+    private JTextField studentCodeField2;
+    private JTextField groupCodeField3;
+
+    private MainForm() {
         setLayout(null);
 
         department = new StudiesDepartment();
 
-        initTable();
-        init();
+        initTables();
 
-        setSize(500, 500);
+        initResultPane();
+        initButtons();
+        initFields();
+
+        setSize(500, 620);
         setVisible(true);
         setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        dataTable.getModel().addTableModelListener(new TableModelListener() {
-
-            public void tableChanged(TableModelEvent e) {
-                dataTable.getModel().removeTableModelListener(this);
-                int row = e.getFirstRow();
-                int column = e.getColumn();
-                String oldName = "2";
-
-                int codeColumn = dataTable.getColumnCount() - 1;
-                Group group = null;
-                try {
-                    group = department.getGroup((Integer) dataTable.getValueAt(row, codeColumn));
-                    oldName = group.name;
-                    } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-                int groupIndex = department.groups.indexOf(group);
-
-
-                if (e.getType() == TableModelEvent.UPDATE) {
-                    String columnName = dataTable.getColumnName(column);
-                    if (columnName.equals("name")) {
-                        department.students.get(row).name = (String) dataTable.getValueAt(row, column);
-                        System.out.println(department.students.get(row).name);
-
-                    }
-
-                    if (columnName.equals("is_captain")) {
-                        department.students.get(row).isCaptain = Boolean.parseBoolean((String) dataTable.getValueAt(row, column));
-                    }
-
-                    if (columnName.equals("group")) {
-                        String newName = (String) dataTable.getValueAt(row, column);
-
-                        department.groups.get(groupIndex).name = newName;
-
-                        for (int i = 0; i < dataTable.getRowCount(); i++) {
-                            if ((dataTable.getValueAt(i, column)).equals(oldName)) {
-                                dataTable.setValueAt((Object) newName, i, column);
-                                dataTable.updateUI();
-                            }
-                        }
-
-                    }
-                }
-
-                if (e.getType() == TableModelEvent.INSERT) {
-
-                }
-                dataTable.getModel().addTableModelListener(this);
-            }
-        });
     }
 
-    private void initTable() {
-        String[] studentsColumns = {"code", "name", "is_captain", "group", "group_code"};
-        Object[] rowData = new Object[5];
+    //----------------------------------------------
+
+    private void initTables() {
+        initStudentsTable();
+        initGroupsTable();
+
+        JScrollPane studentsScrollPane = new JScrollPane(studentsTable);
+        JScrollPane groupsScrollPane = new JScrollPane(groupsTable);
+
+        JTabbedPane pane = new JTabbedPane();
+        pane.setBounds(0, 0, 500, 300);
+        pane.add("Students", studentsScrollPane);
+        pane.add("Groups", groupsScrollPane);
+
+        add(pane);
+    }
+
+    private void initStudentsTable() {
+        String[] studentsColumns = {"code", "name", "is_captain", "group_code"};
+        Object[] rowData = new Object[4];
         DefaultTableModel studentsModel = new DefaultTableModel();
         studentsModel.setColumnIdentifiers(studentsColumns);
         for (int i = 0; i < department.students.size(); i++) {
             rowData[0] = department.students.get(i).code;
             rowData[1] = department.students.get(i).name;
             rowData[2] = department.students.get(i).isCaptain;
-            rowData[3] = department.students.get(i).group.name;
-            rowData[4] = department.students.get(i).group.code;
+            rowData[3] = department.students.get(i).group.code;
             studentsModel.addRow(rowData);
         }
-        dataTable = new JTable(studentsModel);
+        studentsTable = new JTable(studentsModel);
+        studentsTable.setBackground(new Color(246, 217, 221));
+
+        studentsTable.setFillsViewportHeight(true);
+        studentsTable.setColumnSelectionAllowed(false);
+        studentsTable.setRowSelectionAllowed(true);
+
+        addStudentsTableListener();
     }
 
-    private void init() {
-        sp = new JScrollPane(dataTable);
+    private void addStudentsTableListener() {
+        studentsTable.getModel().addTableModelListener(new TableModelListener() {
 
-        dataTable.setFillsViewportHeight(true);
-        dataTable.setColumnSelectionAllowed(false);
-        dataTable.setRowSelectionAllowed(true);
-        pane = new JTabbedPane();
-        pane.setBounds(0, 0, 500, 300);
-        pane.add("Study Department #2938", sp);
-        dataTable.setBackground(new Color(246, 217, 221));
-        add(pane);
+            public void tableChanged(TableModelEvent e) {
+                studentsTable.getModel().removeTableModelListener(this);
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+                String oldName = "2";
 
-        saveToFileButton = new JButton("Save");
-        saveToFileButton.setBounds(400, 400, 90, 20);
-        saveToFileButton.addActionListener((e) -> department.saveToFile(department.OUTPUT_FILE));
+                int codeColumn = studentsTable.getColumnCount() - 1;
+                Group group = null;
+                try {
+                    group = department.getGroup((Integer) studentsTable.getValueAt(row, codeColumn));
+                    oldName = group.name;
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+                int groupIndex = department.groups.indexOf(group);
 
-        add(saveToFileButton);
 
-        addRowButton = new JButton("Add Row");
-        addRowButton.setBounds(5, 400, 90, 20);
-        DefaultTableModel model = (DefaultTableModel) dataTable.getModel();
-        addRowButton.addActionListener((e) -> {
-            model.addRow(new Object[]{department.students.size() + 1, "", "", "", department.groups.size()});
-            department.students.add(new Student());
-            department.students.get(department.students.size() - 1).code = department.students.size();
-            department.students.get(department.students.size() - 1).group = department.groups.get(department.groups.size() - 1);
-            System.out.println(department.students.size());
-        });
+                if (e.getType() == TableModelEvent.UPDATE) {
+                    String columnName = studentsTable.getColumnName(column);
+                    if (columnName.equals("name")) {
+                        department.students.get(row).name = (String) studentsTable.getValueAt(row, column);
+                        System.out.println(department.students.get(row).name);
 
-        add(addRowButton);
+                    }
 
-        deleteRowButton = new JButton("Add Row");
-        deleteRowButton.setBounds(95, 400, 90, 20);
-        deleteRowButton.addActionListener((e) -> {
-            model.removeRow(dataTable.getSelectedRow());
-            try {
-                department.students.remove(department.getStudent((Integer) dataTable.getValueAt(dataTable.getSelectedRows()[0], 0)));
-            } catch (Exception e1) {
-                e1.printStackTrace();
+                    if (columnName.equals("is_captain")) {
+                        department.students.get(row).isCaptain = Boolean.parseBoolean((String) studentsTable.getValueAt(row, column));
+                    }
+
+                    if (columnName.equals("group")) {
+                        String newName = (String) studentsTable.getValueAt(row, column);
+
+                        department.groups.get(groupIndex).name = newName;
+
+                        for (int i = 0; i < studentsTable.getRowCount(); i++) {
+                            if ((studentsTable.getValueAt(i, column)).equals(oldName)) {
+                                studentsTable.setValueAt(newName, i, column);
+                                studentsTable.updateUI();
+                            }
+                        }
+                    }
+                }
+                studentsTable.getModel().addTableModelListener(this);
             }
         });
+    }
+
+    private void initGroupsTable() {
+        String[] groupsColumns = {"code", "name"};
+        Object[] rowData = new Object[2];
+        DefaultTableModel groupsModel = new DefaultTableModel();
+        groupsModel.setColumnIdentifiers(groupsColumns);
+        for (int i = 0; i < department.groups.size(); i++) {
+            rowData[0] = department.groups.get(i).code;
+            rowData[1] = department.groups.get(i).name;
+            groupsModel.addRow(rowData);
+        }
+        groupsTable = new JTable(groupsModel);
+        groupsTable.setBackground(new Color(254, 221, 109));
+
+        groupsTable.setFillsViewportHeight(true);
+        groupsTable.setColumnSelectionAllowed(false);
+        groupsTable.setRowSelectionAllowed(true);
+
+        addGroupsTableListener();
+    }
+
+    private void addGroupsTableListener() {
+
+    }
+
+    //----------------------------------------------
+
+    private void initResultPane() {
+        resultTextPane = new JTextPane();
+        resultTextPane.setText("Here you will see results. " +
+                "\n\n Select row to delete it. " +
+                "\n Double click on the cell to edit it.");
+        resultTextPane.setBounds(5, 450, 490, 100);
+
+        resultTextPane.setEditable(false);
+        add(resultTextPane);
+    }
+
+    private void initButtons() {
+
+        addStudentButton = new JButton("Add Student");
+        addStudentButton.setBounds(400, 300, 90, 20);
+        addStudentButton.addActionListener((e) -> resultTextPane.setText("New student was added!"));
+
+        add(addStudentButton);
+
+        addGroupButton = new JButton("Add Group");
+        addGroupButton.setBounds(400, 330, 90, 20);
+        addGroupButton.addActionListener((e) -> resultTextPane.setText("New group was added!"));
+
+        add(addGroupButton);
+
+        // -------------------------------------------------------------
+
+        findStudentButton = new JButton("Find Student");
+        findStudentButton.setBounds(110, 370, 90, 20);
+        findStudentButton.addActionListener((e) -> resultTextPane.setText("Student: "));
+
+        add(findStudentButton);
+
+        findGroupButton = new JButton("Find Group");
+        findGroupButton.setBounds(400, 370, 90, 20);
+        findGroupButton.addActionListener((e) -> resultTextPane.setText("Group: "));
+
+        add(findGroupButton);
+
+        findStudentsInGroupButton = new JButton("Students in Group");
+        findStudentsInGroupButton.setBounds(400, 400, 90, 20);
+        findStudentsInGroupButton.addActionListener((e) -> resultTextPane.setText("Students in group: "));
+
+        add(findStudentsInGroupButton);
+
+        // -------------------------------------------------------------
+
+        deleteRowButton = new JButton("Delete Row");
+        deleteRowButton.setBounds(5, 560, 90, 20);
+        deleteRowButton.addActionListener((e) -> resultTextPane.setText("Row was deleted!"));
+        deleteRowButton.setEnabled(false);
 
         add(deleteRowButton);
 
+        saveToFileButton = new JButton("Save");
+        saveToFileButton.setBounds(400, 560, 90, 20);
+        saveToFileButton.addActionListener((e) -> department.saveToFile(department.OUTPUT_FILE));
+
+        add(saveToFileButton);
     }
+
+    private void initFields() {
+        studentCodeField1 = new JTextField();
+        studentCodeField1.setBounds(5, 300, 90, 20);
+        studentCodeField1.setToolTipText("student code");
+        add(studentCodeField1);
+
+        studentNameField = new JTextField();
+        studentNameField.setBounds(95, 300, 120, 20);
+        studentNameField.setToolTipText("student name");
+        add(studentNameField);
+
+        isCapField = new JTextField();
+        isCapField.setBounds(215, 300, 90, 20);
+        isCapField.setToolTipText("is student a captain?");
+        add(isCapField);
+
+        groupCodeField1 = new JTextField();
+        groupCodeField1.setBounds(305, 300, 90, 20);
+        groupCodeField1.setToolTipText("group code");
+        add(groupCodeField1);
+
+        //----------------------------------------------
+
+        groupCodeField2 = new JTextField();
+        groupCodeField2.setBounds(215, 330, 90, 20);
+        groupCodeField2.setToolTipText("group code");
+        add(groupCodeField2);
+
+        groupNameField = new JTextField();
+        groupNameField.setBounds(305, 330, 90, 20);
+        groupNameField.setToolTipText("group name");
+        add(groupNameField);
+
+        //----------------------------------------------
+
+        studentCodeField2 = new JTextField();
+        studentCodeField2.setBounds(5, 370, 90, 20);
+        studentCodeField2.setToolTipText("student code");
+        add(studentCodeField2);
+
+        groupCodeField3 = new JTextField();
+        groupCodeField3.setBounds(305, 370, 90, 20);
+        groupCodeField3.setToolTipText("group code");
+        add(groupCodeField3);
+    }
+
+    //----------------------------------------------
 
     public static void main(String[] args) {
         new MainForm();
