@@ -1,16 +1,1 @@
-<?xml version="1.0" encoding="WINDOWS-1251"?>
-<department>
-    <group id="1" name="К-17">
-        <student id="1" name="Вася Пупкін" iscap="1"/>
-        <student id="2" name="Коля Молот" iscap="0"/>
-        <student id="3" name="Саша Свист" iscap="0"/>
-    </group>
-    <group id="2" name="К-27">
-        <student id="4" name="Лєра Вінницька" iscap="1"/>
-        <student id="5" name="Люда Конотоп" iscap="0"/>
-    </group>
-    <group id="3" name="ІС-3">
-        <student id="6" name="Галя Федоренко" iscap="1"/>
-        <student id="7" name="Софія Павлішак" iscap="0"/>
-    </group>
-</department>
+<?xml version="1.0" encoding="WINDOWS-1251" standalone="no"?><department><group id="1" name="К-18"><student id="1" iscap="1" name="Вася Пупець"/><student id="2" iscap="0" name="Коля Молот"/><student id="3" iscap="0" name="Саша Свист"/></group><group id="2" name="К-27"><student id="4" iscap="1" name="Лєра Вінницька"/><student id="5" iscap="0" name="Люда Бугаєвська"/></group><group id="3" name="МСС-3"><student id="7" iscap="1" name="Софія Павлішак"/><student id="8" iscap="0" name="Галіцька Олена"/><student id="9" iscap="0" name="Петрик П'яточкін"/></group></department>

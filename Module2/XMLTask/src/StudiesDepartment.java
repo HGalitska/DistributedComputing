@@ -18,8 +18,15 @@ import java.util.ArrayList;
 
 public class StudiesDepartment {
 
-    private ArrayList<Group> groups = new ArrayList<>();
-    private ArrayList<Student> students = new ArrayList<>();
+    ArrayList<Group> groups = new ArrayList<>();
+    ArrayList<Student> students = new ArrayList<>();
+
+    final String INPUT_FILE = "xmls/input.xml";
+    final String OUTPUT_FILE = "xmls/input.xml";
+
+    StudiesDepartment() {
+        loadFromFile(INPUT_FILE);
+    }
 
     public void saveToFile(String filename) {
         Document doc = null;
@@ -41,6 +48,7 @@ public class StudiesDepartment {
             groupTag.setAttribute("name", group.name);
             root.appendChild(groupTag);
 
+            System.out.println(students.size());
             for (Student student : students) {
                 if (student.group == group) {
                     Element studentTag = doc.createElement("student");
@@ -165,9 +173,11 @@ public class StudiesDepartment {
 
         Group group = getGroup(code);
 
-        for (Student student : students) {
-            if (student.group == group) {
-                students.remove(student);
+        synchronized (students) {
+            for (Student student : students) {
+                if (student.group == group) {
+                    students.remove(student);
+                }
             }
         }
     }
