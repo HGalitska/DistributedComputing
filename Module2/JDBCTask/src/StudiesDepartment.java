@@ -1,16 +1,109 @@
 import java.sql.*;
 import java.util.ArrayList;
+import com.sun.xml.internal.ws.util.pipe.DumpTube;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class StudiesDepartment {
 
     ArrayList<Group> groups = new ArrayList<>();
     ArrayList<Student> students = new ArrayList<>();
 
+    final String XML_FILE = "file.xml";
+
     Connection connection;
 
     StudiesDepartment() {
         loadFromDB();
     }
+    //-----------------------------------------------------------------
+
+    private void getFile(Document doc, String filename) {
+        Source domSource = new DOMSource(doc);
+        Result fileResult = new StreamResult(new File(filename));
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = null;
+        try {
+            transformer = factory.newTransformer();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        }
+        transformer.setOutputProperty(OutputKeys.ENCODING, "WINDOWS-1251");
+        try {
+            transformer.transform(domSource, fileResult);
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadFromFile(String filename) {
+        Document doc = null;
+
+        try {
+            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema s = sf.newSchema(new File("department.xsd"));
+
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setValidating(true);
+            dbf = DocumentBuilderFactory.newInstance();
+            dbf.setValidating(false);
+            dbf.setSchema(s);
+
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            db.setErrorHandler(new SimpleErrorHandler());
+            doc = db.parse(new File(filename));
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
+
+        Element root = doc.getDocumentElement();
+
+        if (root.getTagName().equals("department")) {
+            NodeList listGroups = root.getElementsByTagName("group");
+
+            for (int i = 0; i < listGroups.getLength(); i++) {
+
+                Element group = (Element) listGroups.item(i);
+                int groupCode = Integer.parseInt(group.getAttribute("id"));
+                String groupName = group.getAttribute("name");
+                try {
+                    addGroup(groupCode, groupName);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                NodeList listStudents = group.getElementsByTagName("student");
+
+                for (int j = 0; j < listStudents.getLength(); j++) {
+                    Element student = (Element) listStudents.item(j);
+                    int studentCode = Integer.parseInt(student.getAttribute("id"));
+                    String studentName = student.getAttribute("name");
+                    boolean isCaptain = Integer.parseInt(student.getAttribute("iscap")) != 0;
+                    try {
+                        addStudent(studentCode, studentName, isCaptain, groupCode);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    //-----------------------------------------------------------------
 
     public void saveToDB() {
         try {
@@ -137,14 +230,15 @@ public class StudiesDepartment {
         groups.add(new Group(code, name));
     }
 
-    public Group getGroup(int code) throws Exception {
+    public Group getGroup(int code)  {
         for (Group group : groups) {
             if (group.code == code) {
                 return group;
             }
         }
 
-        throw new Exception("Group with this code does not exists.");
+        //throw new Exception("Group with this code does not exists.");
+        return null;
     }
 
     public Group getGroupInd(int index) throws Exception {
@@ -205,14 +299,15 @@ public class StudiesDepartment {
         students.add(new Student(code, name, group, isCaptain));
     }
 
-    public Student getStudent(int code) throws Exception {
+    public Student getStudent(int code)  {
         for (Student student : students) {
             if (student.code == code) {
                 return student;
             }
         }
 
-        throw new Exception("Student with this code does not exists.");
+        //throw new Exception("Student with this code does not exists.");
+        return null;
     }
 
     public Student getStudentInd(int index) throws Exception {

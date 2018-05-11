@@ -41,6 +41,26 @@ public class MainForm extends JFrame {
 
     //--------------------------------------------------------------------------------------------
 
+    private void addStudentRow(Student s){
+        DefaultTableModel studentsModel = (DefaultTableModel) studentsTable.getModel();
+        Object[] rowData = new Object[4];
+        rowData[0] = s.code;
+        rowData[1] = s.name;
+        rowData[2] = s.isCaptain;
+        rowData[3] = s.group.code;
+        studentsModel.addRow(rowData);
+        studentsTable.updateUI();
+    }
+
+    private void addGroupRow(Group g){
+        DefaultTableModel groupsModel = (DefaultTableModel) groupsTable.getModel();
+        Object[] rowData = new Object[2];
+        rowData[0] = g.code;
+        rowData[1] = g.name;
+        groupsModel.addRow(rowData);
+        groupsTable.updateUI();
+    }
+
     private void initTables() {
         initStudentsTable();
         initGroupsTable();
@@ -265,6 +285,12 @@ public class MainForm extends JFrame {
         });
 
         add(saveToFileButton);
+
+        JButton loadFileButton = new JButton("Load File");
+        loadFileButton.setBounds(305, 560, 90, 20);
+        loadFileButton.addActionListener((e) -> loadFileButtonListener());
+
+        add(loadFileButton);
     }
 
     private void addStudentButtonListener() {
@@ -398,18 +424,6 @@ public class MainForm extends JFrame {
         selRow = groupsTable.getSelectedRow();
         if (selRow != -1) {
             try {
-//                for (Student s : department.students) {
-//                    if (s.group == department.getGroup((Integer) groupsTable.getValueAt(selRow, 0))) {
-//                        department.deleteStudent(s.code);
-//
-//                        for (int i = 0; i < studentModel.getRowCount(); i++) {
-//                            if ((Integer) studentModel.getValueAt(i, 0) == s.code) {
-//                                studentModel.removeRow(i);
-//                                studentsTable.updateUI();
-//                            }
-//                        }
-//                    }
-//                }
                 department.deleteGroup((Integer) groupsTable.getValueAt(selRow, 0));
 
             } catch (Exception e) {
@@ -421,6 +435,51 @@ public class MainForm extends JFrame {
             groupsTable.updateUI();
             resultTextPane.setText("Group was deleted.");
         }
+
+    }
+
+    private void loadFileButtonListener() {
+        int oldGroupsCount = department.groups.size();
+        int oldStudentsCount = department.students.size();
+        ArrayList<Student> oldStudents = department.students;
+        ArrayList<Group> oldGroups = department.groups;
+        department.loadFromFile(department.XML_FILE);
+        int numberOfNewGroups = department.groups.size() - oldGroupsCount;
+        int numberOfNewStudents = department.students.size() - oldStudentsCount;
+
+        for (int i = oldStudentsCount; i < department.students.size(); i++) {
+            //if (department.getStudent(oldStudents.get(i).code) == null)
+                addStudentRow(department.students.get(i));
+//            else {
+//                JDialog d = new JDialog(this, "Attention!", true);
+//                d.setLayout( new FlowLayout() );
+//                JButton b1 = new JButton ("Skip");
+//                JButton b2 = new JButton ("Sk");
+//                JButton b3 = new JButton ("Replace");
+//                b.addActionListener ( new ActionListener()
+//                {
+//                    public void actionPerformed( ActionEvent e )
+//                    {
+//                        DialogExample.d.setVisible(false);
+//                    }
+//                });
+//                d.add( new JLabel ("Click button to continue."));
+//                d.add(b);
+//                d.setSize(300,300);
+//                d.setVisible(true);
+//
+//            }
+        }
+
+        for (int i = oldGroupsCount; i < department.groups.size(); i++) {
+            //if (department.getGroup(oldGroups.get(i).code) == null)
+                addGroupRow(department.groups.get(i));
+//            else {
+//
+//            }
+
+        }
+
 
     }
 

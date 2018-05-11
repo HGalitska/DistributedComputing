@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="WINDOWS-1251" standalone="no"?>
+<department>
+    <group id="10" name="K-11">
+        <student id="100" iscap="0" name="Bobby Phalp"/>
+        <student id="200" iscap="0" name="Kali Tames"/>
+        <student id="300" iscap="1" name="Anallese Foxcroft"/>
+        <student id="400" iscap="0" name="Ario Eskrigge"/>
+        <student id="500" iscap="0" name="Merry Layhe"/>
+        <student id="600" iscap="0" name="Calypso McCowen"/>
+    </group>
+    <group id="20" name="K-28">
+        <student id="700" iscap="1" name="Fonsie Dabell"/>
+        <student id="800" iscap="0" name="Janeva Michallat"/>
+    </group>
+    <group id="30" name="IS-4">
+        <student id="900" iscap="0" name="Constantina McGookin"/>
+        <student id="1000" iscap="0" name="Bekki Lucock"/>
+        <student id="1100" iscap="0" name="Ellsworth Rubrow"/>
+        <student id="1200" iscap="0" name="Noell Hawick"/>
+        <student id="1300" iscap="1" name="Elsbeth Davydkov"/>
+        <student id="1400" iscap="0" name="Rossy Von Oertzen"/>
+        <student id="1500" iscap="0" name="Tootsie Fabry"/>
+        <student id="1600" iscap="0" name="Tallou Birchner"/>
+    </group>
+    <group id="40" name="MSS-2">
+        <student id="1700" iscap="0" name="Bobette Spruce"/>
+        <student id="1800" iscap="1" name="Demetris Lindsley"/>
+        <student id="1900" iscap="0" name="Verney Dyte"/>
+        <student id="2000" iscap="0" name="Jorey Gallant"/>
+        <student id="2100" iscap="0" name="Nadia Terbeek"/>
+        <student id="2200" iscap="0" name="Felicle Tofful"/>
+        <student id="2300" iscap="0" name="Avery Murkin"/>
+        <student id="2400" iscap="0" name="Lucie Hussey"/>
+    </group>
+</department>
