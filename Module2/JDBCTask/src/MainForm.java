@@ -208,8 +208,8 @@ public class MainForm extends JFrame {
                 "\n\n Select row to delete it. " +
                 "\n Double click on the cell to edit it.");
         resultTextPane.setBounds(5, 450, 490, 100);
-
         resultTextPane.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(resultTextPane);
         add(resultTextPane);
     }
 
@@ -260,7 +260,7 @@ public class MainForm extends JFrame {
         JButton saveToFileButton = new JButton("Save");
         saveToFileButton.setBounds(400, 560, 90, 20);
         saveToFileButton.addActionListener((e) -> {
-            department.saveToFile(department.OUTPUT_FILE);
+            department.saveToDB();
             resultTextPane.setText("Changes have been saved.");
         });
 
@@ -398,10 +398,24 @@ public class MainForm extends JFrame {
         selRow = groupsTable.getSelectedRow();
         if (selRow != -1) {
             try {
+//                for (Student s : department.students) {
+//                    if (s.group == department.getGroup((Integer) groupsTable.getValueAt(selRow, 0))) {
+//                        department.deleteStudent(s.code);
+//
+//                        for (int i = 0; i < studentModel.getRowCount(); i++) {
+//                            if ((Integer) studentModel.getValueAt(i, 0) == s.code) {
+//                                studentModel.removeRow(i);
+//                                studentsTable.updateUI();
+//                            }
+//                        }
+//                    }
+//                }
                 department.deleteGroup((Integer) groupsTable.getValueAt(selRow, 0));
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
 
             groupModel.removeRow(selRow);
             groupsTable.updateUI();
