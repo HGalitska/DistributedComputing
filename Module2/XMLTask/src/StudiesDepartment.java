@@ -1,3 +1,4 @@
+import com.sun.xml.internal.ws.util.pipe.DumpTube;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -48,7 +49,6 @@ public class StudiesDepartment {
             groupTag.setAttribute("name", group.name);
             root.appendChild(groupTag);
 
-            System.out.println(students.size());
             for (Student student : students) {
                 if (student.group == group) {
                     Element studentTag = doc.createElement("student");
@@ -173,29 +173,27 @@ public class StudiesDepartment {
 
         Group group = getGroup(code);
 
-        synchronized (students) {
-            for (Student student : students) {
-                if (student.group == group) {
-                    students.remove(student);
-                }
+        for (Student student : students) {
+            if (student.group == group) {
+                students.remove(student);
             }
         }
+
+        groups.remove(group);
+
     }
 
-    public void printStudentsForGroup(int code) throws Exception {
-
+    public ArrayList<Student> printStudentsForGroup(int code) throws Exception {
         Group group = getGroup(code);
+        ArrayList<Student> result = new ArrayList<>();
 
         for (Student student : students) {
             if (student.group.code == group.code) {
-                if (student.isCaptain)
-                    System.out.println(student.code + " *" + student.name);
-                else
-                    System.out.println(student.code + "  " + student.name);
+                result.add(student);
             }
         }
 
-        throw new Exception("Group with this code does not exist.");
+        return result;
     }
 
     //********************************************************************************//

@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
@@ -11,14 +12,6 @@ public class MainForm extends JFrame {
     private JTable groupsTable;
 
     private JTextPane resultTextPane;
-
-    private JButton addStudentButton;
-    private JButton addGroupButton;
-    private JButton findStudentButton;
-    private JButton findGroupButton;
-    private JButton findStudentsInGroupButton;
-    private JButton deleteRowButton;
-    private JButton saveToFileButton;
 
     private JTextField studentCodeField1;
     private JTextField studentNameField;
@@ -37,8 +30,8 @@ public class MainForm extends JFrame {
         initTables();
 
         initResultPane();
-        initButtons();
         initFields();
+        initButtons();
 
         setSize(500, 620);
         setVisible(true);
@@ -46,7 +39,7 @@ public class MainForm extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
-    //----------------------------------------------
+    //--------------------------------------------------------------------------------------------
 
     private void initTables() {
         initStudentsTable();
@@ -85,55 +78,74 @@ public class MainForm extends JFrame {
         addStudentsTableListener();
     }
 
+    //---------------------------------------------
+
     private void addStudentsTableListener() {
         studentsTable.getModel().addTableModelListener(new TableModelListener() {
 
             public void tableChanged(TableModelEvent e) {
                 studentsTable.getModel().removeTableModelListener(this);
+
                 int row = e.getFirstRow();
                 int column = e.getColumn();
-                String oldName = "2";
-
-                int codeColumn = studentsTable.getColumnCount() - 1;
-                Group group = null;
-                try {
-                    group = department.getGroup((Integer) studentsTable.getValueAt(row, codeColumn));
-                    oldName = group.name;
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-                int groupIndex = department.groups.indexOf(group);
-
 
                 if (e.getType() == TableModelEvent.UPDATE) {
                     String columnName = studentsTable.getColumnName(column);
-                    if (columnName.equals("name")) {
-                        department.students.get(row).name = (String) studentsTable.getValueAt(row, column);
-                        System.out.println(department.students.get(row).name);
 
+                    if (columnName.equals("name")) {
+                        updateStudentName(row, column);
                     }
 
                     if (columnName.equals("is_captain")) {
-                        department.students.get(row).isCaptain = Boolean.parseBoolean((String) studentsTable.getValueAt(row, column));
+                        updateStudentIsCap(row, column);
                     }
 
-                    if (columnName.equals("group")) {
-                        String newName = (String) studentsTable.getValueAt(row, column);
-
-                        department.groups.get(groupIndex).name = newName;
-
-                        for (int i = 0; i < studentsTable.getRowCount(); i++) {
-                            if ((studentsTable.getValueAt(i, column)).equals(oldName)) {
-                                studentsTable.setValueAt(newName, i, column);
-                                studentsTable.updateUI();
-                            }
-                        }
+                    if (columnName.equals("group_code")) {
+                        updateStudentGroup(row, column);
                     }
                 }
                 studentsTable.getModel().addTableModelListener(this);
             }
         });
     }
+
+    private void updateStudentName(int row, int column) {
+        String oldName = department.students.get(row).name;
+        String newName = (String) studentsTable.getValueAt(row, column);
+
+        if (!oldName.equals(newName)) {
+            department.students.get(row).name = newName;
+            resultTextPane.setText("Student's name has been changed: " + oldName + " -> " + newName);
+        }
+    }
+
+    private void updateStudentIsCap(int row, int column) {
+        Boolean oldIsCaptain = department.students.get(row).isCaptain;
+        Boolean newIsCaptain = Boolean.parseBoolean((String) studentsTable.getValueAt(row, column));
+
+        if (oldIsCaptain != newIsCaptain) {
+            department.students.get(row).isCaptain = newIsCaptain;
+            resultTextPane.setText("Student's status has been changed: " + oldIsCaptain + " -> " + newIsCaptain);
+        }
+    }
+
+    private void updateStudentGroup(int row, int column) {
+        int oldGroupCode = department.students.get(row).group.code;
+        int newGroupCode = Integer.parseInt((String) studentsTable.getValueAt(row, column));
+
+        if (oldGroupCode != newGroupCode) {
+            try {
+                department.students.get(row).group = department.getGroup(newGroupCode);
+                resultTextPane.setText("Student's group has been changed: " + oldGroupCode + " -> " + newGroupCode);
+            } catch (Exception ex) {
+                resultTextPane.setText("!!!ATTENTION!!! This group doesn't exist!");
+                studentsTable.setValueAt(oldGroupCode, row, column);
+                studentsTable.updateUI();
+            }
+        }
+    }
+
+    //---------------------------------------------
 
     private void initGroupsTable() {
         String[] groupsColumns = {"code", "name"};
@@ -157,9 +169,38 @@ public class MainForm extends JFrame {
 
     private void addGroupsTableListener() {
 
+        groupsTable.getModel().addTableModelListener(new TableModelListener() {
+
+            public void tableChanged(TableModelEvent e) {
+                groupsTable.getModel().removeTableModelListener(this);
+
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+
+                if (e.getType() == TableModelEvent.UPDATE) {
+                    String columnName = groupsTable.getColumnName(column);
+
+                    if (columnName.equals("name")) {
+                        updateGroupName(row, column);
+                    }
+
+                }
+                groupsTable.getModel().addTableModelListener(this);
+            }
+        });
     }
 
-    //----------------------------------------------
+    private void updateGroupName(int row, int column) {
+        String oldName = department.groups.get(row).name;
+        String newName = (String) groupsTable.getValueAt(row, column);
+
+        if (!oldName.equals(newName)) {
+            department.groups.get(row).name = newName;
+            resultTextPane.setText("Group's name has been changed: " + oldName + " -> " + newName);
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------
 
     private void initResultPane() {
         resultTextPane = new JTextPane();
@@ -172,55 +213,204 @@ public class MainForm extends JFrame {
         add(resultTextPane);
     }
 
+    //---------------------------------------------
+
     private void initButtons() {
 
-        addStudentButton = new JButton("Add Student");
+        JButton addStudentButton = new JButton("Add Student");
         addStudentButton.setBounds(400, 300, 90, 20);
-        addStudentButton.addActionListener((e) -> resultTextPane.setText("New student was added!"));
+        addStudentButton.addActionListener((e) -> addStudentButtonListener());
 
         add(addStudentButton);
 
-        addGroupButton = new JButton("Add Group");
+        JButton addGroupButton = new JButton("Add Group");
         addGroupButton.setBounds(400, 330, 90, 20);
-        addGroupButton.addActionListener((e) -> resultTextPane.setText("New group was added!"));
+        addGroupButton.addActionListener((e) -> addGroupButtonListener());
 
         add(addGroupButton);
 
         // -------------------------------------------------------------
 
-        findStudentButton = new JButton("Find Student");
+        JButton findStudentButton = new JButton("Find Student");
         findStudentButton.setBounds(110, 370, 90, 20);
-        findStudentButton.addActionListener((e) -> resultTextPane.setText("Student: "));
+        findStudentButton.addActionListener((e) -> findStudentButtonListener());
 
         add(findStudentButton);
 
-        findGroupButton = new JButton("Find Group");
+        JButton findGroupButton = new JButton("Find Group");
         findGroupButton.setBounds(400, 370, 90, 20);
-        findGroupButton.addActionListener((e) -> resultTextPane.setText("Group: "));
+        findGroupButton.addActionListener((e) -> findGroupButtonListener());
 
         add(findGroupButton);
 
-        findStudentsInGroupButton = new JButton("Students in Group");
+        JButton findStudentsInGroupButton = new JButton("Students in Group");
         findStudentsInGroupButton.setBounds(400, 400, 90, 20);
-        findStudentsInGroupButton.addActionListener((e) -> resultTextPane.setText("Students in group: "));
+        findStudentsInGroupButton.addActionListener((e) -> findStudentsInGroupButtonListener());
 
         add(findStudentsInGroupButton);
 
         // -------------------------------------------------------------
 
-        deleteRowButton = new JButton("Delete Row");
+        JButton deleteRowButton = new JButton("Delete Row");
         deleteRowButton.setBounds(5, 560, 90, 20);
-        deleteRowButton.addActionListener((e) -> resultTextPane.setText("Row was deleted!"));
-        deleteRowButton.setEnabled(false);
+        deleteRowButton.addActionListener((e) -> deleteRowButtonListener());
 
         add(deleteRowButton);
 
-        saveToFileButton = new JButton("Save");
+        JButton saveToFileButton = new JButton("Save");
         saveToFileButton.setBounds(400, 560, 90, 20);
-        saveToFileButton.addActionListener((e) -> department.saveToFile(department.OUTPUT_FILE));
+        saveToFileButton.addActionListener((e) -> {
+            department.saveToFile(department.OUTPUT_FILE);
+            resultTextPane.setText("Changes have been saved.");
+        });
 
         add(saveToFileButton);
     }
+
+    private void addStudentButtonListener() {
+        if (studentCodeField1.getText().equals("")) {
+            resultTextPane.setText("New student should have code!");
+            return;
+        }
+        int code = Integer.parseInt(studentCodeField1.getText());
+        for (Student s : department.students) {
+            if (s.code == code) {
+                resultTextPane.setText("Student with this code already exists.");
+                return;
+            }
+        }
+
+        String name = studentNameField.getText();
+        Boolean isCap = Boolean.parseBoolean(isCapField.getText());
+
+        int groupCode = Integer.parseInt(groupCodeField1.getText());
+        try {
+            Group group = department.getGroup(groupCode);
+            department.addStudent(code, name, isCap, group.code);
+        } catch (Exception e) {
+            resultTextPane.setText("This group doesn't exist!");
+            return;
+        }
+
+        Object[] rowData = new Object[4];
+        rowData[0] = code;
+        rowData[1] = name;
+        rowData[2] = isCap;
+        rowData[3] = groupCode;
+
+        DefaultTableModel model = (DefaultTableModel) studentsTable.getModel();
+        model.addRow(rowData);
+        studentsTable.updateUI();
+        resultTextPane.setText("New student was added!");
+    }
+
+    private void addGroupButtonListener() {
+        if (groupCodeField2.getText().equals("")) {
+            resultTextPane.setText("New group should have code!");
+            return;
+        }
+        int code = Integer.parseInt(groupCodeField2.getText());
+
+        String name = groupNameField.getText();
+        try {
+            department.addGroup(code, name);
+        } catch (Exception e) {
+            resultTextPane.setText("Group with this code already exists.");
+        }
+
+        Object[] rowData = new Object[4];
+        rowData[0] = code;
+        rowData[1] = name;
+
+        DefaultTableModel model = (DefaultTableModel) groupsTable.getModel();
+        model.addRow(rowData);
+        groupsTable.updateUI();
+        resultTextPane.setText("New group was added!");
+    }
+
+    private void findStudentButtonListener() {
+        if (studentCodeField2.getText().equals("")) {
+            resultTextPane.setText("Enter code to search for a student!");
+            return;
+        }
+        int code = Integer.parseInt(studentCodeField2.getText());
+
+        try {
+            Student s = department.getStudent(code);
+            resultTextPane.setText("Name: " + s.name + "\nIs captain: "
+                    + s.isCaptain + "\nGroup: " + s.group.name);
+        } catch (Exception e) {
+            resultTextPane.setText("Student with this code doesn't exist!");
+        }
+    }
+
+    private void findGroupButtonListener() {
+        if (groupCodeField3.getText().equals("")) {
+            resultTextPane.setText("Enter code to search for a group!");
+            return;
+        }
+        int code = Integer.parseInt(groupCodeField3.getText());
+
+        try {
+            Group g = department.getGroup(code);
+            resultTextPane.setText("Group name: " + g.name);
+        } catch (Exception e) {
+            resultTextPane.setText("Group with this code doesn't exist!");
+        }
+    }
+
+    private void findStudentsInGroupButtonListener() {
+        if (groupCodeField3.getText().equals("")) {
+            resultTextPane.setText("Enter code to search for a group!");
+            return;
+        }
+        int code = Integer.parseInt(groupCodeField3.getText());
+
+        try {
+            Group g = department.getGroup(code);
+            resultTextPane.setText("Group name: " + g.name);
+
+            ArrayList<Student> students = department.printStudentsForGroup(code);
+            resultTextPane.setText("");
+            for (Student s : students) {
+                resultTextPane.setText(resultTextPane.getText() + "\n Name: " + s.name);
+            }
+        } catch (Exception e) {
+            resultTextPane.setText("Group with this code doesn't exist!");
+        }
+    }
+
+    private void deleteRowButtonListener() {
+        DefaultTableModel studentModel = (DefaultTableModel) studentsTable.getModel();
+        int selRow = studentsTable.getSelectedRow();
+        if (selRow != -1) {
+            try {
+                department.deleteStudent((Integer) studentsTable.getValueAt(selRow, 0));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            studentModel.removeRow(selRow);
+            studentsTable.updateUI();
+            resultTextPane.setText("Student was deleted.");
+        }
+
+        DefaultTableModel groupModel = (DefaultTableModel) groupsTable.getModel();
+        selRow = groupsTable.getSelectedRow();
+        if (selRow != -1) {
+            try {
+                department.deleteGroup((Integer) groupsTable.getValueAt(selRow, 0));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            groupModel.removeRow(selRow);
+            groupsTable.updateUI();
+            resultTextPane.setText("Group was deleted.");
+        }
+
+    }
+
+    //---------------------------------------------
 
     private void initFields() {
         studentCodeField1 = new JTextField();
@@ -268,7 +458,7 @@ public class MainForm extends JFrame {
         add(groupCodeField3);
     }
 
-    //----------------------------------------------
+    //--------------------------------------------------------------------------------------------
 
     public static void main(String[] args) {
         new MainForm();
