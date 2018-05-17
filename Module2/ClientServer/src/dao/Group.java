@@ -1,3 +1,5 @@
+package dao;
+
 public class Group {
     public int      code;
     public String   name;

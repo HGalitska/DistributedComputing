@@ -1,6 +1,8 @@
 import java.sql.*;
 import java.util.ArrayList;
-import com.sun.xml.internal.ws.util.pipe.DumpTube;
+
+import dao.Group;
+import dao.Student;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -17,7 +19,6 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class StudiesDepartment {
 
@@ -163,7 +164,7 @@ public class StudiesDepartment {
         for (Student s : students) {
             try {
                 String sql = "UPDATE studydep.STUDENTS SET STUDENTS.NAME = ? , " +
-                        "STUDENTS.ISCAPTAIN = ?, STUDENTS.GROUPCODE = ? WHERE CODE = ?";
+                        "STUDENTS.ISCAPTAIN = ?, STUDENTS.groupId = ? WHERE CODE = ?";
                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
                 preparedStatement.setString(1, s.name);
                 if (s.isCaptain) preparedStatement.setInt(2, 1);
@@ -223,7 +224,7 @@ public class StudiesDepartment {
     public void addGroup(int code, String name) throws Exception {
         for (Group group : groups) {
             if (group.code == code) {
-                throw new Exception("Group with this code already exists.");
+                throw new Exception("dao.Group with this code already exists.");
             }
         }
 
@@ -237,13 +238,13 @@ public class StudiesDepartment {
             }
         }
 
-        //throw new Exception("Group with this code does not exists.");
+        //throw new Exception("dao.Group with this code does not exists.");
         return null;
     }
 
     public Group getGroupInd(int index) throws Exception {
         if (index < 0 || index > groups.size() - 1) {
-            throw new Exception("Group index is out of bounds");
+            throw new Exception("dao.Group index is out of bounds");
         }
 
         return groups.get(index);
@@ -290,7 +291,7 @@ public class StudiesDepartment {
     public void addStudent(int code, String name, boolean isCaptain, int groupCode) throws Exception {
         for (Student student : students) {
             if (student.code == code) {
-                throw new Exception("Student with this code already exists.");
+                throw new Exception("dao.Student with this code already exists.");
             }
         }
 
@@ -306,13 +307,13 @@ public class StudiesDepartment {
             }
         }
 
-        //throw new Exception("Student with this code does not exists.");
+        //throw new Exception("dao.Student with this code does not exists.");
         return null;
     }
 
     public Student getStudentInd(int index) throws Exception {
         if (index < 0 || index > students.size() - 1) {
-            throw new Exception("Student index is out of bounds");
+            throw new Exception("dao.Student index is out of bounds");
         }
 
         return students.get(index);
@@ -336,7 +337,7 @@ public class StudiesDepartment {
             }
         }
 
-        throw new Exception("Student with this code does not exist.");
+        throw new Exception("dao.Student with this code does not exist.");
     }
 
     //********************************************************************************//

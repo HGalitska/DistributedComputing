@@ -1,3 +1,6 @@
+import dao.Group;
+import dao.Student;
+
 import java.awt.*;
 import java.util.ArrayList;
 import javax.swing.*;
@@ -135,7 +138,7 @@ public class MainForm extends JFrame {
 
         if (!oldName.equals(newName)) {
             department.students.get(row).name = newName;
-            resultTextPane.setText("Student's name has been changed: " + oldName + " -> " + newName);
+            resultTextPane.setText("dao.Student's name has been changed: " + oldName + " -> " + newName);
         }
     }
 
@@ -145,7 +148,7 @@ public class MainForm extends JFrame {
 
         if (oldIsCaptain != newIsCaptain) {
             department.students.get(row).isCaptain = newIsCaptain;
-            resultTextPane.setText("Student's status has been changed: " + oldIsCaptain + " -> " + newIsCaptain);
+            resultTextPane.setText("dao.Student's status has been changed: " + oldIsCaptain + " -> " + newIsCaptain);
         }
     }
 
@@ -156,7 +159,7 @@ public class MainForm extends JFrame {
         if (oldGroupCode != newGroupCode) {
             try {
                 department.students.get(row).group = department.getGroup(newGroupCode);
-                resultTextPane.setText("Student's group has been changed: " + oldGroupCode + " -> " + newGroupCode);
+                resultTextPane.setText("dao.Student's group has been changed: " + oldGroupCode + " -> " + newGroupCode);
             } catch (Exception ex) {
                 resultTextPane.setText("!!!ATTENTION!!! This group doesn't exist!");
                 studentsTable.setValueAt(oldGroupCode, row, column);
@@ -216,7 +219,7 @@ public class MainForm extends JFrame {
 
         if (!oldName.equals(newName)) {
             department.groups.get(row).name = newName;
-            resultTextPane.setText("Group's name has been changed: " + oldName + " -> " + newName);
+            resultTextPane.setText("dao.Group's name has been changed: " + oldName + " -> " + newName);
         }
     }
 
@@ -237,13 +240,13 @@ public class MainForm extends JFrame {
 
     private void initButtons() {
 
-        JButton addStudentButton = new JButton("Add Student");
+        JButton addStudentButton = new JButton("Add dao.Student");
         addStudentButton.setBounds(400, 300, 90, 20);
         addStudentButton.addActionListener((e) -> addStudentButtonListener());
 
         add(addStudentButton);
 
-        JButton addGroupButton = new JButton("Add Group");
+        JButton addGroupButton = new JButton("Add dao.Group");
         addGroupButton.setBounds(400, 330, 90, 20);
         addGroupButton.addActionListener((e) -> addGroupButtonListener());
 
@@ -251,19 +254,19 @@ public class MainForm extends JFrame {
 
         // -------------------------------------------------------------
 
-        JButton findStudentButton = new JButton("Find Student");
+        JButton findStudentButton = new JButton("Find dao.Student");
         findStudentButton.setBounds(110, 370, 90, 20);
         findStudentButton.addActionListener((e) -> findStudentButtonListener());
 
         add(findStudentButton);
 
-        JButton findGroupButton = new JButton("Find Group");
+        JButton findGroupButton = new JButton("Find dao.Group");
         findGroupButton.setBounds(400, 370, 90, 20);
         findGroupButton.addActionListener((e) -> findGroupButtonListener());
 
         add(findGroupButton);
 
-        JButton findStudentsInGroupButton = new JButton("Students in Group");
+        JButton findStudentsInGroupButton = new JButton("Students in dao.Group");
         findStudentsInGroupButton.setBounds(400, 400, 90, 20);
         findStudentsInGroupButton.addActionListener((e) -> findStudentsInGroupButtonListener());
 
@@ -301,7 +304,7 @@ public class MainForm extends JFrame {
         int code = Integer.parseInt(studentCodeField1.getText());
         for (Student s : department.students) {
             if (s.code == code) {
-                resultTextPane.setText("Student with this code already exists.");
+                resultTextPane.setText("dao.Student with this code already exists.");
                 return;
             }
         }
@@ -341,7 +344,7 @@ public class MainForm extends JFrame {
         try {
             department.addGroup(code, name);
         } catch (Exception e) {
-            resultTextPane.setText("Group with this code already exists.");
+            resultTextPane.setText("dao.Group with this code already exists.");
         }
 
         Object[] rowData = new Object[4];
@@ -364,9 +367,9 @@ public class MainForm extends JFrame {
         try {
             Student s = department.getStudent(code);
             resultTextPane.setText("Name: " + s.name + "\nIs captain: "
-                    + s.isCaptain + "\nGroup: " + s.group.name);
+                    + s.isCaptain + "\ndao.Group: " + s.group.name);
         } catch (Exception e) {
-            resultTextPane.setText("Student with this code doesn't exist!");
+            resultTextPane.setText("dao.Student with this code doesn't exist!");
         }
     }
 
@@ -379,9 +382,9 @@ public class MainForm extends JFrame {
 
         try {
             Group g = department.getGroup(code);
-            resultTextPane.setText("Group name: " + g.name);
+            resultTextPane.setText("dao.Group name: " + g.name);
         } catch (Exception e) {
-            resultTextPane.setText("Group with this code doesn't exist!");
+            resultTextPane.setText("dao.Group with this code doesn't exist!");
         }
     }
 
@@ -394,7 +397,7 @@ public class MainForm extends JFrame {
 
         try {
             Group g = department.getGroup(code);
-            resultTextPane.setText("Group name: " + g.name);
+            resultTextPane.setText("dao.Group name: " + g.name);
 
             ArrayList<Student> students = department.printStudentsForGroup(code);
             resultTextPane.setText("");
@@ -402,7 +405,7 @@ public class MainForm extends JFrame {
                 resultTextPane.setText(resultTextPane.getText() + "\n Name: " + s.name);
             }
         } catch (Exception e) {
-            resultTextPane.setText("Group with this code doesn't exist!");
+            resultTextPane.setText("dao.Group with this code doesn't exist!");
         }
     }
 
@@ -417,7 +420,7 @@ public class MainForm extends JFrame {
             }
             studentModel.removeRow(selRow);
             studentsTable.updateUI();
-            resultTextPane.setText("Student was deleted.");
+            resultTextPane.setText("dao.Student was deleted.");
         }
 
         DefaultTableModel groupModel = (DefaultTableModel) groupsTable.getModel();
@@ -433,7 +436,7 @@ public class MainForm extends JFrame {
 
             groupModel.removeRow(selRow);
             groupsTable.updateUI();
-            resultTextPane.setText("Group was deleted.");
+            resultTextPane.setText("dao.Group was deleted.");
         }
 
     }
