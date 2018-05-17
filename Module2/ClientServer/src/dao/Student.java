@@ -1,6 +1,8 @@
 package dao;
 
-public class Student {
+import java.io.Serializable;
+
+public class Student implements Serializable{
     public int      code;
     public String   name;
     public int      groupId;

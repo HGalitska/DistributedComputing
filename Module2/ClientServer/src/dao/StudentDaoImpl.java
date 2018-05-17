@@ -22,7 +22,7 @@ public class StudentDaoImpl implements StudentDao {
             while (rs.next()) {
                 int code = rs.getInt("code");
                 String name = rs.getString("name");
-                int groupId = rs.getInt("groupCode");
+                int groupId = rs.getInt("groupId");
                 result.add(new Student(code, name, groupId));
             }
 
@@ -50,7 +50,7 @@ public class StudentDaoImpl implements StudentDao {
             while (rs.next()) {
                 int code = rs.getInt("code");
                 String name = rs.getString("name");
-                int groupId = rs.getInt("groupCode");
+                int groupId = rs.getInt("groupId");
                 result = new Student(code, name, groupId);
             }
         } catch (SQLException e) {
@@ -72,7 +72,7 @@ public class StudentDaoImpl implements StudentDao {
             statement = connection.prepareStatement(sql);
             statement.setInt(1, student.code);
             statement.setString(2, student.name);
-            statement.setInt(1, student.groupId);
+            statement.setInt(3, student.groupId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

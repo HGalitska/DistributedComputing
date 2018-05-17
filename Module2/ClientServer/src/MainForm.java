@@ -1,8 +1,7 @@
-import dao.Group;
-import dao.Student;
+import dao.*;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
@@ -10,7 +9,7 @@ import javax.swing.event.TableModelListener;
 
 public class MainForm extends JFrame {
 
-    private StudiesDepartment department;
+    //private StudiesDepartment department;
     private JTable studentsTable;
     private JTable groupsTable;
 
@@ -18,21 +17,22 @@ public class MainForm extends JFrame {
 
     private JTextField studentCodeField1;
     private JTextField studentNameField;
-    private JTextField isCapField;
     private JTextField groupCodeField1;
     private JTextField groupCodeField2;
     private JTextField groupNameField;
     private JTextField studentCodeField2;
     private JTextField groupCodeField3;
 
+
+
+    private static Client client;
+
     private MainForm() {
         setLayout(null);
-
-        department = new StudiesDepartment();
+        initResultPane();
 
         initTables();
 
-        initResultPane();
         initFields();
         initButtons();
 
@@ -44,24 +44,28 @@ public class MainForm extends JFrame {
 
     //--------------------------------------------------------------------------------------------
 
-    private void addStudentRow(Student s){
+    private void addStudentRow(Student s) {
         DefaultTableModel studentsModel = (DefaultTableModel) studentsTable.getModel();
-        Object[] rowData = new Object[4];
+        Object[] rowData = new Object[3];
+
         rowData[0] = s.code;
         rowData[1] = s.name;
-        rowData[2] = s.isCaptain;
-        rowData[3] = s.group.code;
+        rowData[2] = s.groupId;
+
         studentsModel.addRow(rowData);
         studentsTable.updateUI();
+        resultTextPane.setText("New student was added!");
     }
 
-    private void addGroupRow(Group g){
+    private void addGroupRow(Group g) {
         DefaultTableModel groupsModel = (DefaultTableModel) groupsTable.getModel();
         Object[] rowData = new Object[2];
         rowData[0] = g.code;
         rowData[1] = g.name;
         groupsModel.addRow(rowData);
         groupsTable.updateUI();
+
+        resultTextPane.setText("New group was added!");
     }
 
     private void initTables() {
@@ -79,16 +83,19 @@ public class MainForm extends JFrame {
         add(pane);
     }
 
+    //---------------------------------------------
     private void initStudentsTable() {
-        String[] studentsColumns = {"code", "name", "is_captain", "group_code"};
+        String[] studentsColumns = {"code", "name", "group_code"};
         Object[] rowData = new Object[4];
         DefaultTableModel studentsModel = new DefaultTableModel();
         studentsModel.setColumnIdentifiers(studentsColumns);
-        for (int i = 0; i < department.students.size(); i++) {
-            rowData[0] = department.students.get(i).code;
-            rowData[1] = department.students.get(i).name;
-            rowData[2] = department.students.get(i).isCaptain;
-            rowData[3] = department.students.get(i).group.code;
+
+//        List<Student> students = studentDao.getAllStudents();
+        List<Student> students = (List<Student>) client.sendMessage(new Message("ALL_STUDENTS"));
+        for (Student student : students) {
+            rowData[0] = student.code;
+            rowData[1] = student.name;
+            rowData[2] = student.groupId;
             studentsModel.addRow(rowData);
         }
         studentsTable = new JTable(studentsModel);
@@ -100,8 +107,6 @@ public class MainForm extends JFrame {
 
         addStudentsTableListener();
     }
-
-    //---------------------------------------------
 
     private void addStudentsTableListener() {
         studentsTable.getModel().addTableModelListener(new TableModelListener() {
@@ -119,10 +124,6 @@ public class MainForm extends JFrame {
                         updateStudentName(row, column);
                     }
 
-                    if (columnName.equals("is_captain")) {
-                        updateStudentIsCap(row, column);
-                    }
-
                     if (columnName.equals("group_code")) {
                         updateStudentGroup(row, column);
                     }
@@ -133,38 +134,32 @@ public class MainForm extends JFrame {
     }
 
     private void updateStudentName(int row, int column) {
-        String oldName = department.students.get(row).name;
+        int studentId = (Integer) studentsTable.getValueAt(row, 0);
+//        Student student = studentDao.getStudent((Integer) studentsTable.getValueAt(row, 0));
+        Student student = (Student) client.sendMessage(new Message("GET_STUDENT", studentId));
+        String oldName = student.name;
         String newName = (String) studentsTable.getValueAt(row, column);
+        student.name = newName;
 
         if (!oldName.equals(newName)) {
-            department.students.get(row).name = newName;
-            resultTextPane.setText("dao.Student's name has been changed: " + oldName + " -> " + newName);
-        }
-    }
-
-    private void updateStudentIsCap(int row, int column) {
-        Boolean oldIsCaptain = department.students.get(row).isCaptain;
-        Boolean newIsCaptain = Boolean.parseBoolean((String) studentsTable.getValueAt(row, column));
-
-        if (oldIsCaptain != newIsCaptain) {
-            department.students.get(row).isCaptain = newIsCaptain;
-            resultTextPane.setText("dao.Student's status has been changed: " + oldIsCaptain + " -> " + newIsCaptain);
+//            studentDao.updateStudent(student);
+            client.sendMessage(new Message("UPDATE_STUDENT", student));
+            resultTextPane.setText("Student's name has been changed: " + oldName + " -> " + newName);
         }
     }
 
     private void updateStudentGroup(int row, int column) {
-        int oldGroupCode = department.students.get(row).group.code;
-        int newGroupCode = Integer.parseInt((String) studentsTable.getValueAt(row, column));
+        int studentId = (Integer) studentsTable.getValueAt(row, 0);
+//        Student student = studentDao.getStudent((Integer) studentsTable.getValueAt(row, 0));
+        Student student = (Student) client.sendMessage(new Message("GET_STUDENT", studentId));
+        int oldGroupId = student.groupId;
+        int newGroupId = (Integer) studentsTable.getValueAt(row, column);
+        student.groupId = newGroupId;
 
-        if (oldGroupCode != newGroupCode) {
-            try {
-                department.students.get(row).group = department.getGroup(newGroupCode);
-                resultTextPane.setText("dao.Student's group has been changed: " + oldGroupCode + " -> " + newGroupCode);
-            } catch (Exception ex) {
-                resultTextPane.setText("!!!ATTENTION!!! This group doesn't exist!");
-                studentsTable.setValueAt(oldGroupCode, row, column);
-                studentsTable.updateUI();
-            }
+        if (oldGroupId != newGroupId) {
+//            studentDao.updateStudent(student);
+            client.sendMessage(new Message("UPDATE_STUDENT", student));
+            resultTextPane.setText("Student's group has been changed: " + oldGroupId + " -> " + newGroupId);
         }
     }
 
@@ -175,9 +170,12 @@ public class MainForm extends JFrame {
         Object[] rowData = new Object[2];
         DefaultTableModel groupsModel = new DefaultTableModel();
         groupsModel.setColumnIdentifiers(groupsColumns);
-        for (int i = 0; i < department.groups.size(); i++) {
-            rowData[0] = department.groups.get(i).code;
-            rowData[1] = department.groups.get(i).name;
+
+//        List<Group> groups = groupDao.getAllGroups();
+        List<Group> groups = (List<Group>) client.sendMessage(new Message("ALL_GROUPS"));
+        for (Group group : groups) {
+            rowData[0] = group.code;
+            rowData[1] = group.name;
             groupsModel.addRow(rowData);
         }
         groupsTable = new JTable(groupsModel);
@@ -214,12 +212,17 @@ public class MainForm extends JFrame {
     }
 
     private void updateGroupName(int row, int column) {
-        String oldName = department.groups.get(row).name;
+        int groupId = (Integer) groupsTable.getValueAt(row, 0);
+//        Group group = groupDao.getGroup((Integer) groupsTable.getValueAt(row, 0));
+        Group group = (Group) client.sendMessage(new Message("GET_GROUP", groupId));
+        String oldName = group.name;
         String newName = (String) groupsTable.getValueAt(row, column);
+        group.name = newName;
 
         if (!oldName.equals(newName)) {
-            department.groups.get(row).name = newName;
-            resultTextPane.setText("dao.Group's name has been changed: " + oldName + " -> " + newName);
+//            groupDao.updateGroup(group);
+            client.sendMessage(new Message("UPDATE_GROUP", group));
+            resultTextPane.setText("Group's name has been changed: " + oldName + " -> " + newName);
         }
     }
 
@@ -232,7 +235,6 @@ public class MainForm extends JFrame {
                 "\n Double click on the cell to edit it.");
         resultTextPane.setBounds(5, 450, 490, 100);
         resultTextPane.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(resultTextPane);
         add(resultTextPane);
     }
 
@@ -240,13 +242,13 @@ public class MainForm extends JFrame {
 
     private void initButtons() {
 
-        JButton addStudentButton = new JButton("Add dao.Student");
+        JButton addStudentButton = new JButton("Add Student");
         addStudentButton.setBounds(400, 300, 90, 20);
         addStudentButton.addActionListener((e) -> addStudentButtonListener());
 
         add(addStudentButton);
 
-        JButton addGroupButton = new JButton("Add dao.Group");
+        JButton addGroupButton = new JButton("Add Group");
         addGroupButton.setBounds(400, 330, 90, 20);
         addGroupButton.addActionListener((e) -> addGroupButtonListener());
 
@@ -254,19 +256,19 @@ public class MainForm extends JFrame {
 
         // -------------------------------------------------------------
 
-        JButton findStudentButton = new JButton("Find dao.Student");
+        JButton findStudentButton = new JButton("Find Student");
         findStudentButton.setBounds(110, 370, 90, 20);
         findStudentButton.addActionListener((e) -> findStudentButtonListener());
 
         add(findStudentButton);
 
-        JButton findGroupButton = new JButton("Find dao.Group");
+        JButton findGroupButton = new JButton("Find Group");
         findGroupButton.setBounds(400, 370, 90, 20);
         findGroupButton.addActionListener((e) -> findGroupButtonListener());
 
         add(findGroupButton);
 
-        JButton findStudentsInGroupButton = new JButton("Students in dao.Group");
+        JButton findStudentsInGroupButton = new JButton("Students in Group");
         findStudentsInGroupButton.setBounds(400, 400, 90, 20);
         findStudentsInGroupButton.addActionListener((e) -> findStudentsInGroupButtonListener());
 
@@ -280,11 +282,17 @@ public class MainForm extends JFrame {
 
         add(deleteRowButton);
 
-        JButton saveToFileButton = new JButton("Save");
+        JButton saveToFileButton = new JButton("Exit");
         saveToFileButton.setBounds(400, 560, 90, 20);
         saveToFileButton.addActionListener((e) -> {
-            department.saveToDB();
-            resultTextPane.setText("Changes have been saved.");
+            //TODO: make it save DB to XML file
+            client.sendMessage(new Message("EXIT"));
+            try {
+                client.disconnect();
+                this.dispose();
+            } catch (Exception exc) {
+                exc.printStackTrace();
+            }
         });
 
         add(saveToFileButton);
@@ -302,35 +310,25 @@ public class MainForm extends JFrame {
             return;
         }
         int code = Integer.parseInt(studentCodeField1.getText());
-        for (Student s : department.students) {
-            if (s.code == code) {
-                resultTextPane.setText("dao.Student with this code already exists.");
-                return;
-            }
-        }
-
-        String name = studentNameField.getText();
-        Boolean isCap = Boolean.parseBoolean(isCapField.getText());
-
-        int groupCode = Integer.parseInt(groupCodeField1.getText());
-        try {
-            Group group = department.getGroup(groupCode);
-            department.addStudent(code, name, isCap, group.code);
-        } catch (Exception e) {
-            resultTextPane.setText("This group doesn't exist!");
+//        Student student = studentDao.getStudent(code);
+        Student student = (Student) client.sendMessage(new Message("GET_STUDENT", code));
+        if (student != null) {
+            resultTextPane.setText("Student with this code already exists.");
             return;
         }
 
-        Object[] rowData = new Object[4];
-        rowData[0] = code;
-        rowData[1] = name;
-        rowData[2] = isCap;
-        rowData[3] = groupCode;
+        String name = studentNameField.getText();
 
-        DefaultTableModel model = (DefaultTableModel) studentsTable.getModel();
-        model.addRow(rowData);
-        studentsTable.updateUI();
-        resultTextPane.setText("New student was added!");
+        int groupCode = Integer.parseInt(groupCodeField1.getText());
+//        Group group = groupDao.getGroup(groupCode);
+        Group group = (Group) client.sendMessage(new Message("GET_GROUP", code));
+        if (group == null) {
+            resultTextPane.setText("This group doesn't exist!");
+            return;
+        }
+//        studentDao.addStudent(new Student(code, name, groupCode));
+        client.sendMessage(new Message("ADD_STUDENT", new Student(code, name, groupCode)));
+        addStudentRow(new Student(code, name, groupCode));
     }
 
     private void addGroupButtonListener() {
@@ -339,22 +337,19 @@ public class MainForm extends JFrame {
             return;
         }
         int code = Integer.parseInt(groupCodeField2.getText());
-
         String name = groupNameField.getText();
-        try {
-            department.addGroup(code, name);
-        } catch (Exception e) {
-            resultTextPane.setText("dao.Group with this code already exists.");
+
+//        Group group = groupDao.getGroup(code);
+        Group group = (Group) client.sendMessage(new Message("GET_GROUP", code));
+        if (group != null) {
+            resultTextPane.setText("Group with this code already exists.");
+            return;
         }
+//        groupDao.addGroup(new Group(code, name));
+        client.sendMessage(new Message("ADD_GROUP", new Group(code, name)));
 
-        Object[] rowData = new Object[4];
-        rowData[0] = code;
-        rowData[1] = name;
 
-        DefaultTableModel model = (DefaultTableModel) groupsTable.getModel();
-        model.addRow(rowData);
-        groupsTable.updateUI();
-        resultTextPane.setText("New group was added!");
+        addGroupRow(new Group(code, name));
     }
 
     private void findStudentButtonListener() {
@@ -363,14 +358,16 @@ public class MainForm extends JFrame {
             return;
         }
         int code = Integer.parseInt(studentCodeField2.getText());
+//        Student student = studentDao.getStudent(code);
+        Student student = (Student) client.sendMessage(new Message("GET_STUDENT", code));
 
-        try {
-            Student s = department.getStudent(code);
-            resultTextPane.setText("Name: " + s.name + "\nIs captain: "
-                    + s.isCaptain + "\ndao.Group: " + s.group.name);
-        } catch (Exception e) {
-            resultTextPane.setText("dao.Student with this code doesn't exist!");
+
+        if (student == null) {
+            resultTextPane.setText("Student with this code doesn't exist!");
+            return;
         }
+        Group group = (Group) client.sendMessage(new Message("GET_GROUP", code));
+        resultTextPane.setText(" " + student.name + " " + group.name);
     }
 
     private void findGroupButtonListener() {
@@ -379,13 +376,16 @@ public class MainForm extends JFrame {
             return;
         }
         int code = Integer.parseInt(groupCodeField3.getText());
+//        Group group = groupDao.getGroup(code);
+        Group group = (Group) client.sendMessage(new Message("GET_GROUP", code));
 
-        try {
-            Group g = department.getGroup(code);
-            resultTextPane.setText("dao.Group name: " + g.name);
-        } catch (Exception e) {
-            resultTextPane.setText("dao.Group with this code doesn't exist!");
+
+        if (group == null) {
+            resultTextPane.setText("Group with this code doesn't exist!");
+            return;
         }
+
+        resultTextPane.setText(group.name);
     }
 
     private void findStudentsInGroupButtonListener() {
@@ -394,18 +394,21 @@ public class MainForm extends JFrame {
             return;
         }
         int code = Integer.parseInt(groupCodeField3.getText());
+//        Group group = groupDao.getGroup(code);
+        Group group = (Group) client.sendMessage(new Message("GET_GROUP", code));
 
-        try {
-            Group g = department.getGroup(code);
-            resultTextPane.setText("dao.Group name: " + g.name);
+        if (group == null) {
+            resultTextPane.setText("Group with this code doesn't exist!");
+            return;
+        }
 
-            ArrayList<Student> students = department.printStudentsForGroup(code);
-            resultTextPane.setText("");
-            for (Student s : students) {
-                resultTextPane.setText(resultTextPane.getText() + "\n Name: " + s.name);
+//        List<Student> students = studentDao.getAllStudents();
+        List<Student> students = (List<Student>) client.sendMessage(new Message("ALL_STUDENTS"));
+        resultTextPane.setText("");
+        for (Student student : students) {
+            if (student.groupId == code) {
+                resultTextPane.setText(resultTextPane.getText() + "\n" + student.name);
             }
-        } catch (Exception e) {
-            resultTextPane.setText("dao.Group with this code doesn't exist!");
         }
     }
 
@@ -414,76 +417,43 @@ public class MainForm extends JFrame {
         int selRow = studentsTable.getSelectedRow();
         if (selRow != -1) {
             try {
-                department.deleteStudent((Integer) studentsTable.getValueAt(selRow, 0));
+                int studentId = (Integer) studentsTable.getValueAt(selRow, 0);
+//                studentDao.deleteStudent((Integer) studentsTable.getValueAt(selRow, 0));
+                client.sendMessage(new Message("DELETE_STUDENT", studentId));
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             studentModel.removeRow(selRow);
             studentsTable.updateUI();
-            resultTextPane.setText("dao.Student was deleted.");
+            resultTextPane.setText("Student was deleted.");
         }
 
         DefaultTableModel groupModel = (DefaultTableModel) groupsTable.getModel();
         selRow = groupsTable.getSelectedRow();
         if (selRow != -1) {
             try {
-                department.deleteGroup((Integer) groupsTable.getValueAt(selRow, 0));
+                int groupId = (Integer) groupsTable.getValueAt(selRow, 0);
+//                groupDao.deleteGroup((Integer) groupsTable.getValueAt(selRow, 0));
+                client.sendMessage(new Message("DELETE_Group", groupId));
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-
             groupModel.removeRow(selRow);
             groupsTable.updateUI();
-            resultTextPane.setText("dao.Group was deleted.");
+            resultTextPane.setText("Group was deleted.");
         }
+
+        //TODO: when deleting group, delete all students in it
+        //TODO: make deleteing rows from different tables distinct
 
     }
 
+    // TODO: redo loading from file (now only loads to db)
     private void loadFileButtonListener() {
-        int oldGroupsCount = department.groups.size();
-        int oldStudentsCount = department.students.size();
-        ArrayList<Student> oldStudents = department.students;
-        ArrayList<Group> oldGroups = department.groups;
-        department.loadFromFile(department.XML_FILE);
-        int numberOfNewGroups = department.groups.size() - oldGroupsCount;
-        int numberOfNewStudents = department.students.size() - oldStudentsCount;
-
-        for (int i = oldStudentsCount; i < department.students.size(); i++) {
-            //if (department.getStudent(oldStudents.get(i).code) == null)
-                addStudentRow(department.students.get(i));
-//            else {
-//                JDialog d = new JDialog(this, "Attention!", true);
-//                d.setLayout( new FlowLayout() );
-//                JButton b1 = new JButton ("Skip");
-//                JButton b2 = new JButton ("Sk");
-//                JButton b3 = new JButton ("Replace");
-//                b.addActionListener ( new ActionListener()
-//                {
-//                    public void actionPerformed( ActionEvent e )
-//                    {
-//                        DialogExample.d.setVisible(false);
-//                    }
-//                });
-//                d.add( new JLabel ("Click button to continue."));
-//                d.add(b);
-//                d.setSize(300,300);
-//                d.setVisible(true);
-//
-//            }
-        }
-
-        for (int i = oldGroupsCount; i < department.groups.size(); i++) {
-            //if (department.getGroup(oldGroups.get(i).code) == null)
-                addGroupRow(department.groups.get(i));
-//            else {
-//
-//            }
-
-        }
-
-
+        XMLLoader.loadFromFile();
     }
 
     //---------------------------------------------
@@ -499,10 +469,6 @@ public class MainForm extends JFrame {
         studentNameField.setToolTipText("student name");
         add(studentNameField);
 
-        isCapField = new JTextField();
-        isCapField.setBounds(215, 300, 90, 20);
-        isCapField.setToolTipText("is student a captain?");
-        add(isCapField);
 
         groupCodeField1 = new JTextField();
         groupCodeField1.setBounds(305, 300, 90, 20);
@@ -537,6 +503,11 @@ public class MainForm extends JFrame {
     //--------------------------------------------------------------------------------------------
 
     public static void main(String[] args) {
+        try {
+            client = new Client("localhost", 12345);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         new MainForm();
     }
 }
