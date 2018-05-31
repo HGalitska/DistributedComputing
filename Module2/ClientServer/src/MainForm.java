@@ -1,6 +1,7 @@
 import dao.*;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -23,13 +24,17 @@ public class MainForm extends JFrame {
     private JTextField studentCodeField2;
     private JTextField groupCodeField3;
 
-
-
     private static Client client;
 
     private MainForm() {
         setLayout(null);
         initResultPane();
+
+        try {
+            client = new Client("localhost", 12345);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         initTables();
 
@@ -503,11 +508,9 @@ public class MainForm extends JFrame {
     //--------------------------------------------------------------------------------------------
 
     public static void main(String[] args) {
-        try {
-            client = new Client("localhost", 12345);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         new MainForm();
     }
 }
+
+//TODO: метки изменений
+//TODO: save to xml from table

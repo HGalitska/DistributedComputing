@@ -8,8 +8,8 @@ public class Client {
 
     public Client(String ip, int port) throws IOException {
         sock = new Socket(ip, port);
-        in = new ObjectInputStream(sock.getInputStream());
         out = new ObjectOutputStream(sock.getOutputStream());
+        in = new ObjectInputStream(sock.getInputStream());
     }
 
     public Object sendMessage(Message message) {
