@@ -111,4 +111,18 @@ public class GroupDaoImpl implements GroupDao {
             ConnectionFactory.closeConnection(statement, connection);
         }
     }
+
+    public void saveGroupsToDB(ArrayList<Group> groups) {
+
+        int countRows = getAllGroups().size();
+
+        while (countRows < groups.size()) {
+            addGroup(groups.get(countRows));
+            countRows++;
+        }
+
+        for (Group g : groups) {
+            updateGroup(g);
+        }
+    }
 }

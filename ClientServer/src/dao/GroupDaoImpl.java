@@ -6,13 +6,12 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StudentDaoImpl implements StudentDao {
-
+public class GroupDaoImpl implements GroupDao {
     @Override
-    public List<Student> getAllStudents() {
-        ArrayList<Student> result = new ArrayList<>();
+    public List<Group> getAllGroups() {
+        ArrayList<Group> result = new ArrayList<>();
 
-        String sql = "SELECT * FROM studydep.students";
+        String sql = "SELECT * FROM studydep.groups";
         Connection connection = null;
         Statement statement = null;
         try {
@@ -22,8 +21,7 @@ public class StudentDaoImpl implements StudentDao {
             while (rs.next()) {
                 int code = rs.getInt("code");
                 String name = rs.getString("name");
-                int groupId = rs.getInt("groupId");
-                result.add(new Student(code, name, groupId));
+                result.add(new Group(code, name));
             }
 
         } catch (SQLException e) {
@@ -36,22 +34,21 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public Student getStudent(int studentId) {
-        Student result = null;
+    public Group getGroup(int groupId) {
+        Group result = null;
 
-        String sql = "SELECT * FROM studydep.students WHERE students.code = ?";
+        String sql = "SELECT * FROM studydep.groups WHERE groups.code = ?";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = ConnectionFactory.getInstance().getConnection();
             statement = connection.prepareStatement(sql);
-            statement.setInt(1, studentId);
+            statement.setInt(1, groupId);
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 int code = rs.getInt("code");
                 String name = rs.getString("name");
-                int groupId = rs.getInt("groupId");
-                result = new Student(code, name, groupId);
+                result = new Group(code, name);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -63,16 +60,15 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public void addStudent(Student student) {
-        String sql = "INSERT INTO studydep.students(code, name, groupId) VALUES(?, ?, ?)";
+    public void addGroup(Group group) {
+        String sql = "INSERT INTO studydep.groups(code, name) VALUES(?, ?)";
         PreparedStatement statement = null;
         Connection connection = null;
         try {
             connection = ConnectionFactory.getInstance().getConnection();
             statement = connection.prepareStatement(sql);
-            statement.setInt(1, student.code);
-            statement.setString(2, student.name);
-            statement.setInt(3, student.groupId);
+            statement.setInt(1, group.code);
+            statement.setString(2, group.name);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -82,16 +78,15 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public void updateStudent(Student student) {
-        String sql = "UPDATE studydep.students SET name = ?, groupId = ? WHERE code = ?";
+    public void updateGroup(Group group) {
+        String sql = "UPDATE studydep.groups SET name = ? WHERE code = ?";
         PreparedStatement statement = null;
         Connection connection = null;
         try {
             connection = ConnectionFactory.getInstance().getConnection();
             statement = connection.prepareStatement(sql);
-            statement.setString(1, student.name);
-            statement.setInt(2, student.groupId);
-            statement.setInt(3, student.code);
+            statement.setString(1, group.name);
+            statement.setInt(2, group.code);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -101,34 +96,19 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public void deleteStudent(int studentId) {
-        String sql = "DELETE FROM studydep.students WHERE code = ?";
+    public void deleteGroup(int groupId) {
+        String sql = "DELETE FROM studydep.groups WHERE code = ?";
         PreparedStatement statement = null;
         Connection connection = null;
         try {
             connection = ConnectionFactory.getInstance().getConnection();
             statement = connection.prepareStatement(sql);
-            statement.setInt(1, studentId);
+            statement.setInt(1, groupId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             ConnectionFactory.closeConnection(statement, connection);
-        }
-    }
-
-    public void saveStudentsToDB(ArrayList<Student> students) {
-
-        int studentsInDB = getAllStudents().size();
-
-        while (studentsInDB < students.size()) {
-            addStudent(students.get(studentsInDB));
-            studentsInDB++;
-        }
-
-
-        for (Student g : students) {
-            updateStudent(g);
         }
     }
 }

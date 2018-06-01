@@ -116,19 +116,4 @@ public class StudentDaoImpl implements StudentDao {
             ConnectionFactory.closeConnection(statement, connection);
         }
     }
-
-    public void saveStudentsToDB(ArrayList<Student> students) {
-
-        int studentsInDB = getAllStudents().size();
-
-        while (studentsInDB < students.size()) {
-            addStudent(students.get(studentsInDB));
-            studentsInDB++;
-        }
-
-
-        for (Student g : students) {
-            updateStudent(g);
-        }
-    }
 }

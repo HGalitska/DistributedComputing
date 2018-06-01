@@ -19,6 +19,9 @@ public class XMLLoader {
     final static String XSD_FILE = "department.xsd";
 
     //-----------------------------------------------------------------
+
+    //TODO: saving from Form to XML file
+    //TODO: attributes to elements
     public static void loadFromFile() {
         Document doc = null;
 
